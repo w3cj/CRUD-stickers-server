@@ -12,7 +12,9 @@ function isValidId(req, res, next) {
 function validSticker(sticker) {
   const hasTitle = typeof sticker.title == 'string' && sticker.title.trim() != '';
   const hasURL = typeof sticker.url == 'string' && sticker.url.trim() != '';
-  return hasTitle && hasURL;
+  const hasDescription = typeof sticker.description == 'string' && sticker.description.trim() != '';
+  const hasRating = !isNaN(sticker.rating);
+  return hasTitle && hasDescription && hasURL && hasRating;
 }
 
 router.get('/', (req, res) => {
@@ -39,6 +41,24 @@ router.post('/', (req, res, next) => {
   } else {
     next(new Error('Invalid sticker'));
   }
+});
+
+router.put('/:id', isValidId, (req, res, next) => {
+  if(validSticker(req.body)) {
+    queries.update(req.params.id, req.body).then(stickers => {
+      res.json(stickers[0]);
+    });
+  } else {
+    next(new Error('Invalid sticker'));
+  }
+});
+
+router.delete('/:id', isValidId, (req, res) => {
+  queries.delete(req.params.id).then(() => {
+    res.json({
+      deleted: true
+    });
+  });
 });
 
 module.exports = router;
