@@ -9,6 +9,12 @@ function isValidId(req, res, next) {
   next(new Error('Invalid ID'));
 }
 
+function validSticker(sticker) {
+  const hasTitle = typeof sticker.title == 'string' && sticker.title.trim() != '';
+  const hasURL = typeof sticker.url == 'string' && sticker.url.trim() != '';
+  return hasTitle && hasURL;
+}
+
 router.get('/', (req, res) => {
   queries.getAll().then(stickers => {
     res.json(stickers);
@@ -23,6 +29,16 @@ router.get('/:id', isValidId, (req, res, next) => {
       next();
     }
   });
+});
+
+router.post('/', (req, res, next) => {
+  if(validSticker(req.body)) {
+    queries.create(req.body).then(stickers => {
+      res.json(stickers[0]);
+    });
+  } else {
+    next(new Error('Invalid sticker'));
+  }
 });
 
 module.exports = router;
